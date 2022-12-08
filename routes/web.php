@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\CartController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,6 +15,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/articles',  [ArticleController::class, 'index']);
+
+Route::get('/articles/page/',  [ArticleController::class, 'indexPage']);
+
+Route::get('/cart',  [CartController::class, 'index']);
+
+Route::post('/cart/addToCart',  [CartController::class, 'addToCart']);
+
+Route::post('/cart/deleteFromCart/',  [CartController::class, 'deleteFromCart']);
