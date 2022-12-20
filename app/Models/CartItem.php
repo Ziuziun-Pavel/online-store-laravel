@@ -13,7 +13,7 @@ class CartItem extends Model implements ICartItem
     private int $id;
 
     /** @var int */
-    private int $product_id;
+    private int $productId;
 
     /** @var int */
     private int $qty;
@@ -43,12 +43,12 @@ class CartItem extends Model implements ICartItem
 
     public function getProductId(): int
     {
-        return $this->product_id;
+        return $this->productId;
     }
 
     public function setProductId($id)
     {
-        $this->product_id = $id;
+        $this->productId = $id;
     }
 
     public function setQty($qty)

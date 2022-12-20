@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Redirect;
 
 class CartController extends Controller
 {
-    public int $totalPrice = 0;
+    private int $totalPrice = 0;
 
     public function index()
     {

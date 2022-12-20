@@ -12,49 +12,41 @@ class SqlArticleRepository extends Model implements IRepository
 {
     public function getById(int $id): Article
     {
-        $sql = "SELECT articles.id, articles.name, articles.cost, products.manufacture, products.releaseDate, services.deadline
-                FROM articles
-                    LEFT JOIN products
-                        ON articles.id = products.id
-                    LEFT JOIN services
-                        ON articles.id = services.id
-                    WHERE articles.id = $id   ";
+        $article = DB::table('articles')
+            ->leftJoin('products', 'articles.id', '=', 'products.id')
+            ->leftJoin('services', 'articles.id', '=', 'services.id')
+            ->select('articles.id', 'articles.name', 'articles.cost', 'products.manufacture', 'products.releaseDate', 'services.deadline')
+            ->where('articles.id', '=', $id)
+            ->first();
 
-        $sql1 = "SELECT product_types.type
-                 FROM articles
-                     LEFT JOIN connections
-                         ON articles.id = connections.id
-                     LEFT JOIN product_types
-                         ON product_types.type_id = connections.type_id
-                     WHERE articles.id = $id   ";
+        $rowType = DB::table('articles')
+            ->leftJoin('connections', 'articles.id', '=', 'connections.id')
+            ->leftJoin('product_types', 'product_types.type_id', '=', 'connections.type_id')
+            ->select('product_types.type')
+            ->where('articles.id', '=', $id)
+            ->first();
 
-        $rowType = DB::select($sql1);
-
-        if ($rowType[0]->type === 'Service') {
+        if ($rowType[0]->type === IRepository::serviceType) {
             $service = new Service();
 
-            $row = DB::select($sql);
-
-            $service->setId($row[0]->id);
+            $service->setId($article[0]->id);
             $service->setType(2);
-            $service->setName($row[0]->name);
-            $service->setDeadLine($row[0]->deadline);
-            $service->setCost($row[0]->cost);
+            $service->setName($article[0]->name);
+            $service->setDeadLine($article[0]->deadline);
+            $service->setCost($article[0]->cost);
 
 
             return $service;
 
-        } elseif($rowType[0]->type === 'Product') {
+        } elseif($rowType[0]->type === IRepository::productType) {
             $product = new Product();
 
-            $row = DB::select($sql);
-
-            $product->setId($row[0]->id);
-            $product->setName($row[0]->name);
+            $product->setId($article[0]->id);
+            $product->setName($article[0]->name);
             $product->setType(1);
-            $product->setManufacture($row[0]->manufacture);
-            $product->setReleaseDate($row[0]->releaseDate);
-            $product->setCost($row[0]->cost);
+            $product->setManufacture($article[0]->manufacture);
+            $product->setReleaseDate($article[0]->releaseDate);
+            $product->setCost($article[0]->cost);
 
             return $product;
         }
@@ -62,33 +54,24 @@ class SqlArticleRepository extends Model implements IRepository
 
     public function getList($limit, $pageNum, $start): array
     {
-        $sql = "SELECT articles.id, articles.name, articles.cost, products.manufacture, products.releaseDate, services.deadline, connections.type_id
-                FROM articles
-                    LEFT JOIN products
-                        ON articles.id = products.id
-                    LEFT JOIN services
-                        ON articles.id = services.id
-                    LEFT JOIN connections
-                        ON articles.id = connections.id
-                        LIMIT $start, $limit";
+        $articles = DB::table('articles')
+            ->leftJoin('products', 'articles.id', '=', 'products.id')
+            ->leftJoin('services', 'articles.id', '=', 'services.id')
+            ->leftJoin('connections', 'articles.id', '=', 'connections.id')
+            ->select('articles.id', 'articles.name', 'articles.cost', 'products.manufacture', 'products.releaseDate', 'services.deadline', 'connections.type_id')
+            ->limit($limit)
+            ->get();
 
-        $sql1 = "SELECT count(articles.id) AS id
-                FROM articles
-                    LEFT JOIN products
-                        ON articles.id = products.id
-                    LEFT JOIN services
-                        ON articles.id = services.id
-                        ";
+        $countArticles = DB::table('articles')
+            ->leftJoin('products', 'articles.id', '=', 'products.id')
+            ->leftJoin('services', 'articles.id', '=', 'services.id')
+            ->select('articles.id')
+            ->count();
 
-        $articles = [];
-
-
-        $artCount = DB::select($sql1);
-        $total = $artCount[0]->id;
+        $total = $countArticles;
         $pages = ceil($total / $limit);
-        $rows = DB::select($sql);
 
-        foreach ($rows as $key => $value) {
+        foreach ($articles as $key => $value) {
 
             if ($value->type_id === 2) {
                 $service = new Service();

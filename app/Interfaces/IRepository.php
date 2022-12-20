@@ -6,6 +6,9 @@ use App\Models\ReturningTypeOfGetListFunc;
 
 interface IRepository
 {
+    const serviceType = 'Service';
+    const productType = 'Product';
+
     /**
      * Get Article by id
      * @param int $id

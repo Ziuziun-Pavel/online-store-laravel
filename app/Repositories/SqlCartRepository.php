@@ -10,7 +10,7 @@ class SqlCartRepository extends Model implements ICart
 {
     public function addToCart(CartItem $cartItem): bool
     {
-        $data=array('product_id'=>$cartItem->getProductId(),"qty"=>$cartItem->getQty(),"totalCost"=>$cartItem->getItemTotalPrice());
+        $data=['product_id'=>$cartItem->getProductId(),"qty"=>$cartItem->getQty(),"totalCost"=>$cartItem->getItemTotalPrice()];
         DB::table('cart')->insert($data);
         return true;
     }
@@ -23,11 +23,11 @@ class SqlCartRepository extends Model implements ICart
 
     public function showAll(): array
     {
-        $sql = "SELECT * FROM cart";
+        $cartItems = DB::table('cart')
+            ->select('*')
+            ->get();
 
         $result = [];
-
-        $cartItems = DB::select($sql);
 
         foreach ($cartItems as $key => $value) {
             $cartItem = new CartItem();
